@@ -59,6 +59,7 @@ public class MyActivity extends AppCompatActivity {
     private Date startDate;
     private boolean startRecord = false;
     private Handler stopHandler = new Handler();
+    private volatile boolean flag = false;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,8 +112,8 @@ public class MyActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             thread = new ConnectedThread(socket);
+                            flag = true;
                             thread.start();
-
                         }
                     });
                     builder.show();
@@ -142,7 +143,12 @@ public class MyActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (thread != null) {
-                    thread.cancel();
+                    flag = false;
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     thread = null;
                     startRecord = false;
                 }
@@ -181,7 +187,6 @@ public class MyActivity extends AppCompatActivity {
 
         }
     }
-
 
     public boolean onCreateOptionsMenu(Menu menu)  {
         getMenuInflater().inflate(R.menu.menu, menu);
@@ -228,16 +233,6 @@ public class MyActivity extends AppCompatActivity {
         }
     };
 
-    private Handler tHandler = new Handler() {
-
-        public void handleMessage(Message msg) {
-            if (msg.what == 1) {
-                int y = (int) (Math.random() * 90);
-                chartView.updateView(y);
-            }
-        }
-    };
-
     class ConnectedThread extends Thread {
 
         private final BluetoothSocket mmSocket;
@@ -259,7 +254,7 @@ public class MyActivity extends AppCompatActivity {
         public void run() {
             byte[] buffer = new byte[1];
             int bytes = 0;
-            while (!isInterrupted()) {
+            while (flag) {
                 try {
                     bytes = mmInStream.read(buffer);
                     mHandler.obtainMessage(1, bytes, -1, buffer).sendToTarget();
@@ -267,17 +262,15 @@ public class MyActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        }
-
-        public void cancel() {
             try {
-                
+
                 mmInStream.close();
                 mmSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     public String byte2HexStr(byte[] b)
