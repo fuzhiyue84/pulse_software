@@ -13,6 +13,7 @@ android {
         ndk {
             moduleName "NdkBlePulse"
             abiFilters "armeabi", "armeabi-v7a", "x86"
+            ldLibs "log", "EGL", "GLESv2"
         }
     }
     buildTypes {

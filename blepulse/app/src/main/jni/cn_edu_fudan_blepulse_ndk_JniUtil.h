@@ -14,10 +14,10 @@ extern "C" {
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_cn_edu_fudan_blepulse_ndk_JniUtil_logCalc
-  (JNIEnv *, jclass, jstring);
+  (JNIEnv * env, jclass type, jstring content);
 
 JNIEXPORT jdouble JNICALL
-Java_cn_edu_fudan_blepulse_ndk_JniUtil_calcArea(JNIEnv *env, jclass type, jintArray data_);
+Java_cn_edu_fudan_blepulse_ndk_JniUtil_calcArea(JNIEnv *env, jclass type, jintArray data);
 
 #ifdef __cplusplus
 }

@@ -40,8 +40,9 @@ import java.util.UUID;
 import cn.edu.fudan.blepulse.chartview.MyChartView;
 import cn.edu.fudan.blepulse.ormlite.DataHelper;
 import cn.edu.fudan.blepulse.ormlite.ReceiverData;
+import cn.edu.fudan.blepulse.view.IMainView;
 
-public class MyActivity extends AppCompatActivity {
+public class MyActivity extends AppCompatActivity implements IMainView {
 
     private Button connectButton;
     private Button stopButton;
@@ -51,8 +52,6 @@ public class MyActivity extends AppCompatActivity {
     BluetoothSocket socket;
     ConnectedThread thread;;
     private MyChartView chartView;
-    private Timer timer = new Timer();
-    private TimerTask task;
     int count = 0;
     byte[] dataStore = new byte[300];
     private DataHelper helper;
@@ -232,6 +231,46 @@ public class MyActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    public void update(int i) {
+
+    }
+
+    @Override
+    public void changeColor() {
+
+    }
+
+    @Override
+    public void connectDevice() {
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+        if (pairedDevices.size() > 0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MyActivity.this);
+            final String[] devicesName = new String[pairedDevices.size()];
+            final String[] devicesAddress = new String[pairedDevices.size()];
+            int i = 0;
+            for (BluetoothDevice device : pairedDevices) {
+                devicesName[i] = device.getName() + "\n" + device.getAddress();
+                devicesAddress[i] = device.getAddress();
+                i++;
+            }
+            builder.setItems(devicesName, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(devicesAddress[i]);
+                    try {
+                        socket = device.createRfcommSocketToServiceRecord(UUID.fromString(myUUID));
+                        socket.connect();
+                        Toast.makeText(MyActivity.this, "连接成功", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            builder.show();
+        }
+    }
 
     class ConnectedThread extends Thread {
 
